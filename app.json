@@ -1,5 +1,7 @@
 {
   "expo": {
+    "scheme": "found-neu-1",
+    "platforms": ["ios", "android", "web"],
     "name": "found-neu-1",
     "slug": "found-neu-1",
     "version": "1.0.0",
