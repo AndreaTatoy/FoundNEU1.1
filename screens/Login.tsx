@@ -48,98 +48,64 @@ const Login: React.FC<LoginScreenProps> = ({ setIsLoggedIn }) => {
 
 const InstitutionalLogin = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [isLoading, setIsLoading] = useState(false);
-
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: "674509133893-nm5hnm0q7d8pbh62dms043ibtdbkfluj.apps.googleusercontent.com",
     webClientId: "674509133893-8ghe9hfsqr2u0hpn3fu5bdclfi0h1qpl.apps.googleusercontent.com",
-    //expoClientId: "674509133893-8ghe9hfsqr2u0hpn3fu5bdclfi0h1qpl.apps.googleusercontent.com",
-    redirectUri: makeRedirectUri({
-      native: "foundneu://",
-    }),
-    scopes: ['openid', 'profile', 'email']
+    redirectUri: makeRedirectUri()
   });
 
   useEffect(() => {
+    console.log("Response: ", response);
     if (response?.type === "success") {
-      handleGoogleSignIn(response.authentication?.accessToken);
-    } else if (response?.type === "error") {
-      Alert.alert("Authentication Error", "Failed to sign in with Google. Please try again.");
-      setIsLoading(false);
+      const { id_token } = response.params;
+      if (id_token) {
+        handleGoogleSignIn(id_token);
+      } else {
+        console.error("ID Token is undefined");
+        Alert.alert("Login Failed", "ID Token is undefined. Please try again.");
+      }
     }
   }, [response]);
 
-  const handleGoogleSignIn = async (accessToken?: string) => {
-    if (!accessToken) {
-      Alert.alert("Authentication Error", "No access token received");
+  const handleGoogleSignIn = async (idToken: string) => {
+    console.log("ID Token: ", idToken);
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider: "google",
+      token: idToken,
+    });
+
+    if (error) {
+      console.error("Login Failed: ", error.message);
+      Alert.alert("Login Failed", error.message);
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithIdToken({
-        provider: 'google',
-        token: accessToken,
-      });
-
-      if (signInError) {
-        throw signInError;
-      }
-
-      const userEmail = signInData.user?.email;
-      
-      if (!userEmail) {
-        throw new Error("No email address received from Google");
-      }
-
-      console.log("User email:", userEmail);
-
-      if (!userEmail.endsWith("@neu.edu.ph")) {
-        await supabase.auth.signOut();
-        Alert.alert(
-          "Access Denied",
-          "Please use your NEU institutional email (@neu.edu.ph) to sign in."
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("Authentication successful");
+    const userEmail = data.session?.user?.email;
+    console.log("User Email: ", userEmail);
+    if (userEmail?.endsWith("@neu.edu.ph")) {
       navigation.navigate("Main");
-      
-    } catch (error) {
-      console.error("Authentication error:", error);
-      Alert.alert(
-        "Authentication Error",
-        "An error occurred during sign in. Please try again."
-      );
-    } finally {
-      setIsLoading(false);
+    } else {
+      await supabase.auth.signOut();
+      Alert.alert("Access Denied", "Only @neu.edu.ph emails are allowed.");
     }
   };
 
   return (
     <View style={styles.loginContainer}>
       <Text style={styles.description}>
-        Welcome to New Era University's very own <Text style={{ color: "green" }}>lost & found</Text> app!
+        Welcome to New Era University’s very own <Text style={{ color: "green" }}>lost & found</Text> app!
       </Text>
       <TouchableOpacity
-        style={[styles.googleButton, isLoading && styles.disabledButton]}
-        onPress={() => {
-          setIsLoading(true);
-          promptAsync();
-        }}
-        disabled={!request || isLoading}
+        style={styles.googleButton}
+        onPress={() => promptAsync()}
+        disabled={!request}
       >
         <Image source={require("../assets/icon.png")} style={styles.googleIcon} />
-        <Text style={styles.googleText}>
-          {isLoading ? "Signing in..." : "Sign in with Google"}
-        </Text>
+        <Text style={styles.googleText}>Sign in with Google</Text>
       </TouchableOpacity>
     </View>
   );
-};
+}
 
 const GuestLogin = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -148,6 +114,9 @@ const GuestLogin = () => {
       <Text style={styles.description}>Hello, dear visitor!</Text>
       <Text style={styles.subText}>Enter your email to continue as a guest.</Text>
 
+      {/* Placeholder for Email Input (Can be added later) */}
+
+      {/* Continue as Guest Button */}
       <TouchableOpacity style={styles.googleButton} onPress={() => navigation.replace("Main")}>
         <Text style={styles.googleText}>Continue as Guest</Text>
       </TouchableOpacity>
@@ -201,9 +170,6 @@ const styles = StyleSheet.create({
     width: "80%",
     justifyContent: "center",
     marginBottom: 10,
-  },
-  disabledButton: {
-    opacity: 0.7,
   },
   googleIcon: {
     width: 20,
