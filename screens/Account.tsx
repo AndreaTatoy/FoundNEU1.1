@@ -20,10 +20,7 @@ const Account: React.FC<AccountProps> = ({ setIsLoggedIn }) => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Login" }],
-    });
+    navigation.replace("Login");
   };
 
   return (
@@ -40,7 +37,7 @@ const Account: React.FC<AccountProps> = ({ setIsLoggedIn }) => {
         <Text style={styles.label}>STUDENT ID</Text>
         <TextInput style={styles.input} value="22-01345-678" editable={false} />
         <Text style={styles.label}>PHONE NUMBER</Text>
-        <TextInput style={styles.input} value="+63 090 1234 567" editable={false} />
+        <TextInput style={styles.input} value="+63 090 1234 567" editable={false}/>
       </View>
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>

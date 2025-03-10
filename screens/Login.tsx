@@ -43,8 +43,8 @@ const InstitutionalLogin: React.FC = () => {
       <Text style={styles.subText}>
         FoundNEU is NEU’s official platform for reporting, tracking, and recovering lost items within our community. Whether you’ve lost or found something, our system helps reconnect belongings with their rightful owners efficiently.
       </Text>
-      <TouchableOpacity style={styles.signInButton} onPress={() => navigation.navigate("Main")}> 
-        <Text style={styles.signInText}>Continue</Text>
+      <TouchableOpacity style={styles.signInButton} onPress={() => navigation.replace("Main")}> 
+        <Text style={styles.signInText}>Enter as NEU Member</Text>
       </TouchableOpacity>
     </View>
   );
@@ -55,9 +55,9 @@ const GuestLogin: React.FC = () => {
   return (
     <View style={styles.loginContainer}>
       <Text style={styles.description}>Hello, dear visitor!</Text>
-      <Text style={styles.subText}>Continue as a guest.</Text>
+      <Text style={styles.subText}>Continue as a guest to browse the platform.</Text>
       <TouchableOpacity style={styles.signInButton} onPress={() => navigation.replace("Main")}> 
-        <Text style={styles.signInText}>Continue as Guest</Text>
+        <Text style={styles.signInText}>Enter as Guest</Text>
       </TouchableOpacity>
     </View>
   );
